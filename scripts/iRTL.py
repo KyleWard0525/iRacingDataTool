@@ -26,7 +26,7 @@ class iRacingTelemetryLogger:
         self.sdk_vars = parse_irsdk_vars(self.data_dir + "\\irsdk_vars.txt")
         self.output_dir = self.data_dir + "\\outputs"
         self.recording = False
-        self.polling_rate = 0.1    # Polling rate in seconds; 0.1 = 10Hz
+        self.polling_rate = 0.25    # Polling rate in seconds; 0.25 = 25Hz
         
         # Create dictionary to store telemetry data
         self.data = {
