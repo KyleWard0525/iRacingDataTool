@@ -20,4 +20,4 @@ print(f"{len(lap2_data['time']['data']) = }")
 print(f"Lap 1 time: {data_proc.get_lap_time(1)}s")
 
 # Plot lap 2 throttle position
-data_proc.plot_channel_across_lap("Throttle", 2)
+data_proc.plot_channel_across_stint("SteeringWheelAngle")
