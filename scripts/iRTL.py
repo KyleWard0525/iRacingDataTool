@@ -8,6 +8,7 @@ import sys
 import json
 import time
 import irsdk    # iRacing SDK
+import pandas as pd
 from datetime import datetime
 from threading import Thread
 
@@ -25,15 +26,16 @@ class iRacingTelemetryLogger:
         self.sdk_vars = parse_irsdk_vars(self.data_dir + "\\irsdk_vars.txt")
         self.output_dir = self.data_dir + "\\outputs"
         self.recording = False
-        self.polling_rate = 0.01    # Polling rate in seconds; 0.01 = 100Hz
+        self.polling_rate = 0.1    # Polling rate in seconds; 0.1 = 10Hz
         
         # Create dictionary to store telemetry data
         self.data = {
             # channel_name: {"desc": str, "unit": str, "data": []}
+            "time": {"desc": "Session time", "unit": "s", "data": []}
         }
         
         # Create list of channels to record
-        self.channels = ["RPM", "Speed", "LatAccel", "LongAccel", "VertAccel", "Throttle", "Pitch", "Yaw", "Roll"]
+        self.channels = ["RPM", "Speed", "LatAccel", "LongAccel", "VertAccel", "Throttle", "Pitch", "Yaw", "Roll", "SteeringWheelAngle", "SteeringWheelTorque"]
         
         # Loop through channels to add and extract channel data from sdk vars
         for channel in self.channels:
@@ -99,12 +101,21 @@ class iRacingTelemetryLogger:
         """
         # Loop through channels and poll data from the sim
         for channel_name, channel in self.data.items():
+            if channel_name == "time":
+                continue
+            
             # Attempt to poll the channel data from the sim
             _data = self.ir_sdk[channel_name]
             if _data:
                 channel["data"].append(_data)
             else:
                 channel["data"].append(-99999)  # Failed to retrieve data from sim, set to -99999
+                
+        # Add session time to the data
+        if len(self.data["time"]["data"]) > 1:
+            self.data["time"]["data"].append(self.data["time"]["data"][-1] + self.polling_rate)
+        else:
+            self.data["time"]["data"].append(0.0)    # First data point is 0.0
                 
     def run(self):
         """
