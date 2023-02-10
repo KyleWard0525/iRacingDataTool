@@ -48,7 +48,7 @@ class iRTLDataProcessor:
             raise Exception(f"iRTLDataProcessor.get_lap_data(): Lap {lap} does not exist!")
         
         # Get the lap points for the specified lap
-        lap_pts = self.lap_points[lap]
+        lap_pts = self.lap_points[lap-1]
         
         lap_data = {}
         for channel in self.data.keys():
@@ -64,7 +64,7 @@ class iRTLDataProcessor:
             # Check if channel unit is a percentage
             if self.data[channel]["unit"] == "%":
                 _data *= 100
-            
+                
             lap_data[channel] = {
                 "desc": self.data[channel]["desc"],
                 "unit": self.data[channel]["unit"],
@@ -107,3 +107,38 @@ class iRTLDataProcessor:
         plt.plot(x, lap_data[channel]["data"], label=channel)
         plt.legend()
         plt.show()
+    
+    def plot_channel_across_stint(self, channel: str):
+        """
+        Plot the specified channel across the entire stint
+
+        Args:
+            channel (str): Channel name
+        """
+        # Check that the channel is in the list of selected channels to record
+        if not channel in self.data.keys():
+            raise Exception(f"iRTLDataProcessor.plot_channel_across_lap(): Channel '{channel}' not found in the data!")
+
+        time_data = []
+        channel_data = []
+        unit = ""
+        
+        # Iterate through each lap
+        for lap in range(self.n_laps):
+            # Append the lap time to the time data
+            lap_data = self.get_lap_data(lap+1)
+            channel_data = np.concatenate((channel_data, lap_data[channel]["data"]))
+            time_data = np.concatenate((time_data, lap_data["time"]["data"]))
+            
+            if unit == "":
+                unit = lap_data[channel]["unit"]
+                
+        # Plot the data
+        plt.title(f"{channel} (Laps 1-{self.n_laps})")
+        plt.xlabel("Time (s)")
+        plt.ylabel(f"{channel} ({unit})")
+        plt.plot(time_data, channel_data, label=channel)
+        plt.legend()
+        plt.show()
+        
+        
