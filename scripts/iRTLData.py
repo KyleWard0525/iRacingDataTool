@@ -51,10 +51,19 @@ class iRTLDataProcessor:
         
         lap_data = {}
         for channel in self.data.keys():
+            _data = np.array(self.data[channel]["data"][lap_pts[0]:lap_pts[1]])
+            
+            # Check for errors in the data
+            err_idxs = np.where(_data == -99999)[0]
+            
+            # Loop through the error indices and replace the error values with the previous value
+            for err_idx in err_idxs:
+                _data[err_idx] = _data[err_idx-1]
+            
             lap_data[channel] = {
                 "desc": self.data[channel]["desc"],
                 "unit": self.data[channel]["unit"],
-                "data": self.data[channel]["data"][lap_pts[0]:lap_pts[1]]
+                "data": _data
             }
         
         return lap_data
@@ -67,5 +76,5 @@ class iRTLDataProcessor:
             raise Exception(f"iRTLDataProcessor.get_lap_time(): Lap {lap} does not exist!")
         
         # Get the lap points for the specified lap
-        lap_pts = self.lap_points[lap]
+        lap_pts = self.lap_points[lap-1]
         return self.data["time"]["data"][lap_pts[1]] - self.data["time"]["data"][lap_pts[0]]
