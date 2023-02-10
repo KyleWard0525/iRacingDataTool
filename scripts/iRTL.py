@@ -35,7 +35,8 @@ class iRacingTelemetryLogger:
         }
         
         # Create list of channels to record
-        self.channels = ["RPM", "Speed", "LatAccel", "LongAccel", "VertAccel", "Throttle", "Pitch", "Yaw", "Roll", "SteeringWheelAngle", "SteeringWheelTorque"]
+        self.channels = ["Lap", "RPM", "Speed", "LatAccel", "LongAccel", "VertAccel", "Throttle", "Pitch", "Yaw", "Roll", "Gear",
+                         "Clutch", "Brake", "YawRate", "SteeringWheelAngle", "SteeringWheelTorque"]
         
         # Loop through channels to add and extract channel data from sdk vars
         for channel in self.channels:
@@ -49,7 +50,7 @@ class iRacingTelemetryLogger:
                     "unit": _var["unit"],
                     "data": []
                 }
-        
+    
     def start(self):
         """
         Start the telemetry logger
@@ -112,7 +113,7 @@ class iRacingTelemetryLogger:
                 
         # Add session time to the data
         if len(self.data["time"]["data"]) > 1:
-            self.data["time"]["data"].append(self.data["time"]["data"][-1] + self.polling_rate)
+            self.data["time"]["data"].append(round(self.data["time"]["data"][-1] + self.polling_rate, 5))
         else:
             self.data["time"]["data"].append(0.0)    # First data point is 0.0
     
