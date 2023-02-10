@@ -6,8 +6,8 @@ from scripts.iRTL import iRacingTelemetryLogger
 def init_message():
     print("=========================================")
     print("iRacing Telemetry Logger")
-    print("Press 's' to start recording and 'q' to stop recording (quit)")
     print("Kyle Ward 2023")
+    print("\nPress 's' to start recording and 'q' to stop recording (quit)")
     print("=========================================\n")
 
 def main():
@@ -18,10 +18,14 @@ def main():
         # Check if telemetry logger is recording
         if not irtl.recording:       
             op = input("Start recording ('s'): ")
-            irtl.start()
+            
+            if op == "s":
+                irtl.start()
         else:
             op = input("Stop recording ('q'): ")
-            irtl.stop()
+            
+            if op == "q":
+                irtl.stop()
             
 
 
