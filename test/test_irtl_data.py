@@ -17,12 +17,7 @@ lap2_data = data_proc.get_lap_data(2)
 
 print(f"{lap2_data.keys() = }")
 print(f"{len(lap2_data['time']['data']) = }")
-print(f"Lap 1 time: {data_proc.get_lap_time(3)}s")
+print(f"Lap 1 time: {data_proc.get_lap_time(1)}s")
 
 # Plot lap 2 throttle position
-x = lap2_data["time"]["data"]
-plt.title("Throttle Position (Lap 2)")
-plt.xlabel("Time (s)")
-plt.ylabel("Throttle Position (%)")
-plt.plot(x, lap2_data["Throttle"]["data"], label="Throttle %")
-plt.show()
+data_proc.plot_channel_across_lap("Throttle", 2)
