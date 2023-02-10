@@ -64,8 +64,7 @@ class iRacingTelemetryLogger:
         self.recording = True
         self.telemetry_thread = Thread(target=self.run) 
         self.telemetry_thread.start()
-        
-        
+             
     def __filename(self):
         """
         Generate an output filename for the telemetry data
@@ -107,7 +106,7 @@ class iRacingTelemetryLogger:
             # Attempt to poll the channel data from the sim
             _data = self.ir_sdk[channel_name]
             if _data:
-                channel["data"].append(_data)
+                channel["data"].append(round(_data, 5))
             else:
                 channel["data"].append(-99999)  # Failed to retrieve data from sim, set to -99999
                 
@@ -116,7 +115,7 @@ class iRacingTelemetryLogger:
             self.data["time"]["data"].append(self.data["time"]["data"][-1] + self.polling_rate)
         else:
             self.data["time"]["data"].append(0.0)    # First data point is 0.0
-                
+    
     def run(self):
         """
         Run the telemetry logger
@@ -125,4 +124,4 @@ class iRacingTelemetryLogger:
         
         while self.recording:
             self.poll()
-            time.sleep(self.polling_rate)
+            time.sleep(self.polling_rate - 0.001)    # Subtract 1ms to account for processing time
