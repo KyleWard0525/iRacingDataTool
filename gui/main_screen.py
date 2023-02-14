@@ -14,6 +14,7 @@ class MainScreen(ctk.CTkFrame):
         Initialize the main screen
         """
         super().__init__(root, **kwargs)
+        self.root = root
         
         # Create test button
         self.widgets = {
@@ -36,8 +37,20 @@ class MainScreen(ctk.CTkFrame):
         self.widgets["labels"]["title"] = ctk.CTkLabel(self, text="iRacing Telemetry Logger", text_color=COLORS["text_white"], font=("Arial", self.font_size+15))
         self.widgets["labels"]["title"].place(relx=0.5, rely=0.05, anchor="center")
         
+        # Create tabs
+        self.widgets["tabs"] = ctk.CTkTabview(self.root)
+        self.widgets["tabs"].add("Home")
+        self.widgets["tabs"].add("Channels")
+        self.widgets["tabs"].place(relx=0.5, rely=0.55, relwidth=1, relheight=0.9, anchor="center")
+        #self.widgets["tabs"].pack(padx=10, pady=70, fill="both", expand=True)
+        
+
+        self.widgets["tabs"].configure(border_width=0, fg_color="#000000")
+
+        
+        
         # Build buttons
-        self.widgets["buttons"]["test_button"] = ctk.CTkButton(self, 
+        self.widgets["buttons"]["test_button"] = ctk.CTkButton(self.widgets["tabs"].tab("Home"), 
                                                                text="Test", 
                                                                command=lambda: print("Test button pressed"), 
                                                                fg_color=COLORS["royal_purple"],
