@@ -5,6 +5,7 @@ Copyright © Kyle Ward 2023
 """
 import tkinter as tk
 import customtkinter as ctk
+from PIL import Image
 from gui import COLORS
 
 class MainScreen(ctk.CTkFrame):
@@ -20,11 +21,13 @@ class MainScreen(ctk.CTkFrame):
         self.widgets = {
             "buttons": {},
             "labels": {},
+            "images": {},
             "tabs": {}
         }
         
-        # Default font size
-        self.font_size = 20 
+        # Font sizes
+        self.btn_font_size = 20 
+        self.title_font_size = 35
         
         # Build widgets
         self.build_widgets()
@@ -34,27 +37,50 @@ class MainScreen(ctk.CTkFrame):
         Build GUI widgets and add them to the frame
         """
         # Create title label
-        self.widgets["labels"]["title"] = ctk.CTkLabel(self, text="iRacing Telemetry Logger", text_color=COLORS["text_white"], font=("Arial", self.font_size+15))
+        self.widgets["labels"]["title"] = ctk.CTkLabel(self, text="iRacing Telemetry Logger", text_color=COLORS["text_white"], font=("Arial", self.title_font_size))
         self.widgets["labels"]["title"].place(relx=0.5, rely=0.05, anchor="center")
+        
+        
+        # Create 'Recording' status image
+        self.widgets["images"]["record_status"] = ctk.CTkImage(light_image=Image.open("images/circle.png"), dark_image=Image.open("images/circle.png"), size=(40, 40))
+        
+        # Create 'Recording' status label
+        self.widgets["labels"]["record_status"] = ctk.CTkLabel(self,
+                                                               text="Not recording",
+                                                               text_color=COLORS["text_white"],
+                                                               font=("Arial", self.title_font_size-5)
+                                                               )
+        self.widgets["labels"]["record_status"].place(relx=0.125, rely=0.05, anchor="center")
+        self.widgets["labels"]["record_status_image"] = ctk.CTkLabel(self, text="", image=self.widgets["images"]["record_status"])
+        self.widgets["labels"]["record_status_image"].place(relx=0.0295, rely=0.05, anchor="center")
+        
         
         # Create tabs
         self.widgets["tabs"] = ctk.CTkTabview(self.root)
         self.widgets["tabs"].add("Home")
         self.widgets["tabs"].add("Channels")
         self.widgets["tabs"].place(relx=0.5, rely=0.55, relwidth=1, relheight=0.9, anchor="center")
-        #self.widgets["tabs"].pack(padx=10, pady=70, fill="both", expand=True)
         
-
+        # Configure tabs
         self.widgets["tabs"].configure(border_width=0, fg_color="#000000")
-
-        
         
         # Build buttons
         self.widgets["buttons"]["test_button"] = ctk.CTkButton(self.widgets["tabs"].tab("Home"), 
                                                                text="Test", 
-                                                               command=lambda: print("Test button pressed"), 
+                                                               command=self.start, 
                                                                fg_color=COLORS["royal_purple"],
                                                                hover_color=COLORS["btn_hover"],
-                                                               font=("Arial", self.font_size),
+                                                               font=("Arial", self.btn_font_size),
                                                                cursor="hand2")
         self.widgets["buttons"]["test_button"].place(relx=0.5, rely=0.5, anchor="center")
+        
+        
+    def start(self):
+        """
+        Start recording telemetry
+        """
+        
+        # Reconfigure record status label and image
+        self.widgets["labels"]["record_status"].configure(text="Recording")
+        self.widgets["images"]["record_status"].configure(light_image=Image.open("images/recording.png"), dark_image=Image.open("images/recording.png"), size=(40, 40))
+        self.widgets["labels"]["record_status_image"] = ctk.CTkLabel(self, text="", image=self.widgets["images"]["record_status"])
