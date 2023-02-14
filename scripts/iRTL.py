@@ -17,7 +17,7 @@ from scripts.data_utils import parse_irsdk_vars
 
 class iRacingTelemetryLogger:
     
-    def __init__(self):
+    def __init__(self, **kwargs):
         """
         Initialize the logger
         """
@@ -27,6 +27,8 @@ class iRacingTelemetryLogger:
         self.output_dir = self.data_dir + "\\outputs"
         self.recording = False
         self.polling_rate = 0.25    # Polling rate in seconds; 0.25 = 25Hz
+        self.data_precison = 5      # Number of decimal places to round data to
+        self.data_err_code = -((2**31) - 1)  # Error code for failed data retrieval from sim
         
         # Create dictionary to store telemetry data
         self.data = {
@@ -34,10 +36,19 @@ class iRacingTelemetryLogger:
             "time": {"desc": "Session time", "unit": "s", "data": []}
         }
         
-        # Create list of channels to record
-        self.channels = ["Lap", "RPM", "Speed", "LatAccel", "LongAccel", "VertAccel", "Throttle", "Pitch", "Yaw", "Roll", "Gear",
-                         "Clutch", "Brake", "YawRate", "SteeringWheelAngle", "SteeringWheelTorque"]
-        
+        # Check if list of channels to record is provided
+        self.channels = []
+        if "channels" in kwargs:
+            _channels = kwargs["channels"]
+            
+            # Validate channels
+            self.channels = [channel for channel in _channels if self.channel_exists(channel)]
+        else:
+            # Create default list of channels to record
+            self.channels = ["Lap", "RPM", "Speed", "LatAccel", "LongAccel", "VertAccel", "Throttle", "Pitch", "Yaw", "Roll", "Gear",
+                            "Clutch", "Brake", "YawRate", "SteeringWheelAngle", "SteeringWheelTorque", "LapDist", "AirDensity", "AirTemp",
+                            "AirPressure", "WindDir", "WindVel"]
+            
         # Loop through channels to add and extract channel data from sdk vars
         for channel in self.channels:
             # Read variable data from the sdk vars
@@ -50,6 +61,16 @@ class iRacingTelemetryLogger:
                     "unit": _var["unit"],
                     "data": []
                 }
+    
+    def channel_exists(self, channel: str) -> bool:
+        """
+        Check if a channel exists in the session data
+        """
+        for var in self.sdk_vars:
+            if var["name"] == channel:
+                return True
+            
+        return False
     
     def start(self):
         """
@@ -107,13 +128,13 @@ class iRacingTelemetryLogger:
             # Attempt to poll the channel data from the sim
             _data = self.ir_sdk[channel_name]
             if _data:
-                channel["data"].append(round(_data, 5))
+                channel["data"].append(round(_data, self.data_precison))
             else:
-                channel["data"].append(-99999)  # Failed to retrieve data from sim, set to -99999
+                channel["data"].append(self.data_err_code)  # Failed to retrieve data from sim, set to -2147483647
                 
         # Add session time to the data
         if len(self.data["time"]["data"]) > 1:
-            self.data["time"]["data"].append(round(self.data["time"]["data"][-1] + self.polling_rate, 5))
+            self.data["time"]["data"].append(round(self.data["time"]["data"][-1] + self.polling_rate, self.data_precison))
         else:
             self.data["time"]["data"].append(0.0)    # First data point is 0.0
     
