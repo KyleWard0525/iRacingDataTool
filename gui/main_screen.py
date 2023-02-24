@@ -11,6 +11,8 @@ from utils.data_bank import DataBank
 from tktooltip import ToolTip
 from logger import CHANNELS
 from functools import partial
+from logger.iRTL import iRacingTelemetryLogger
+from tkinter import messagebox
 
 class MainScreen(ctk.CTkFrame):
     
@@ -24,6 +26,9 @@ class MainScreen(ctk.CTkFrame):
         
         # Set data bank object
         self.data_bank = data_bank
+        
+        # Create telemetry logger object
+        self.logger = iRacingTelemetryLogger()
         
         # UI widgets
         self.widgets = {
@@ -97,14 +102,14 @@ class MainScreen(ctk.CTkFrame):
         self.widgets["tabs"].add("Home")
         
         # Build buttons
-        self.widgets["buttons"]["test_button"] = ctk.CTkButton(self.widgets["tabs"].tab("Home"), 
-                                                               text="Test", 
+        self.widgets["buttons"]["btn_toggle_record"] = ctk.CTkButton(self.widgets["tabs"].tab("Home"), 
+                                                               text="Toggle Recording", 
                                                                command=self.toggle_recording, 
                                                                fg_color=COLORS["royal_purple"],
                                                                hover_color=COLORS["btn_hover"],
                                                                font=("Arial", self.btn_font_size),
                                                                cursor="hand2")
-        self.widgets["buttons"]["test_button"].place(relx=0.5, rely=0.5, anchor="center")
+        self.widgets["buttons"]["btn_toggle_record"].place(relx=0.5, rely=0.5, anchor="center")
     
     def create_channels_tab(self):
         """
@@ -142,12 +147,9 @@ class MainScreen(ctk.CTkFrame):
         """
         Update the channel tab when the category drop-down menu is changed
         """
-        print(value)
-        
         # Create channel selection page for the selected category
         self.update_channel_category_page(value)
         
-    
     def update_channel_category_page(self, category: str):
         """
         Update the current channel selection page for the given category
@@ -212,7 +214,7 @@ class MainScreen(ctk.CTkFrame):
                                                                         text_color=COLORS["text_white"],
                                                                         font=("Arial", self.input_label_font_size)
                                                                     )
-            self.widgets["labels"][f"{channel}_unit"].grid(row=i, column=2, padx=20, pady=10, sticky="w")    
+            self.widgets["labels"][f"{channel}_unit"].grid(row=i, column=2, padx=10, pady=10, sticky="w")    
                     
             # Check if a string var exists for this channel
             if not channel in self.widgets["inputs"]["string_vars"]:
@@ -221,14 +223,13 @@ class MainScreen(ctk.CTkFrame):
             # Create toggle switch for channel
             callback = partial(self.toggle_channel, channel)
             self.widgets["inputs"][f"log_{channel}"] = ctk.CTkSwitch(self.widgets["frames"][f"channel_page_{category}"],
-                                                                    text=channel,
+                                                                    text="",
                                                                     command=callback,
                                                                     variable=self.widgets["inputs"]["string_vars"][channel],
                                                                     onvalue="on",
                                                                     offvalue="off"
                                                                     )
-            self.widgets["inputs"][f"log_{channel}"].grid(row=i, column=3, padx=50, pady=10, sticky="e")
-                                                                                           
+            self.widgets["inputs"][f"log_{channel}"].grid(row=i, column=3, padx=10, pady=10, sticky="e")                                                                                 
         
     def toggle_channel(self, channel: str):
         """
@@ -242,13 +243,14 @@ class MainScreen(ctk.CTkFrame):
             # Enable logging channel
             self.data_bank.data["channels"][channel] = True
             
-            print(f"DEBUG: Logging enabled for channel '{channel}'")
+            # Update enabled channels in the logger
+            self.logger.channels = self.data_bank.enabled_channels()
         else:
             # Disable logging channel
             self.data_bank.data["channels"][channel] = False
             
-            print(f"DEBUG: Logging disabled for channel '{channel}'")
-        
+            # Update enabled channels in the logger
+            self.logger.channels = self.data_bank.enabled_channels()
         
     def create_tooltips(self):
         """
@@ -266,6 +268,7 @@ class MainScreen(ctk.CTkFrame):
         if self.data_bank.data["is_recording"]:
             # Stop recording
             self.data_bank.data["is_recording"] = False
+            self.logger.stop()
             
             # Reconfigure record status label and image
             self.widgets["labels"]["record_status"].configure(text="Not recording")
@@ -274,6 +277,11 @@ class MainScreen(ctk.CTkFrame):
         else:
             # Start recording
             self.data_bank.data["is_recording"] = True
+            
+            # Attempt to start the telemetry logger
+            if not self.logger.start():
+                messagebox.showerror("Error", "ERROR: Failed to connect to the iRacing SDK. Please ensure that the iRacing simulator is running and try again.")
+                return
             
             # Reconfigure record status label and image
             self.widgets["labels"]["record_status"].configure(text="Recording")
