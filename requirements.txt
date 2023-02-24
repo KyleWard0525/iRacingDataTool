@@ -3,3 +3,4 @@ numpy
 matplotlib
 pyirsdk
 customtkinter
+tkinter-tooltip
