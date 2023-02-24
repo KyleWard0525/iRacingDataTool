@@ -7,15 +7,20 @@ import tkinter as tk
 import customtkinter as ctk
 from PIL import Image
 from gui import COLORS
+from utils.data_bank import DataBank
 
 class MainScreen(ctk.CTkFrame):
     
-    def __init__(self, root, **kwargs):
+    def __init__(self, root, data_bank: DataBank, **kwargs):
         """
         Initialize the main screen
         """
+        # Initialize frame
         super().__init__(root, **kwargs)
         self.root = root
+        
+        # Set data bank object
+        self.data_bank = data_bank
         
         # Create test button
         self.widgets = {
@@ -67,7 +72,7 @@ class MainScreen(ctk.CTkFrame):
         # Build buttons
         self.widgets["buttons"]["test_button"] = ctk.CTkButton(self.widgets["tabs"].tab("Home"), 
                                                                text="Test", 
-                                                               command=self.start, 
+                                                               command=self.toggle_recording, 
                                                                fg_color=COLORS["royal_purple"],
                                                                hover_color=COLORS["btn_hover"],
                                                                font=("Arial", self.btn_font_size),
@@ -75,12 +80,26 @@ class MainScreen(ctk.CTkFrame):
         self.widgets["buttons"]["test_button"].place(relx=0.5, rely=0.5, anchor="center")
         
         
-    def start(self):
+    def toggle_recording(self):
         """
-        Start recording telemetry
+        Toggle telemetry recording 
         """
         
-        # Reconfigure record status label and image
-        self.widgets["labels"]["record_status"].configure(text="Recording")
-        self.widgets["images"]["record_status"].configure(light_image=Image.open("images/recording.png"), dark_image=Image.open("images/recording.png"), size=(40, 40))
-        self.widgets["labels"]["record_status_image"] = ctk.CTkLabel(self, text="", image=self.widgets["images"]["record_status"])
+        # Check if recording
+        if self.data_bank.data["is_recording"]:
+            # Stop recording
+            self.data_bank.data["is_recording"] = False
+            
+            # Reconfigure record status label and image
+            self.widgets["labels"]["record_status"].configure(text="Not recording")
+            self.widgets["images"]["record_status"].configure(light_image=Image.open("images/circle.png"), dark_image=Image.open("images/circle.png"), size=(40, 40))
+            self.widgets["labels"]["record_status_image"] = ctk.CTkLabel(self, text="", image=self.widgets["images"]["record_status"])
+        else:
+            # Start recording
+            self.data_bank.data["is_recording"] = True
+            
+            # Reconfigure record status label and image
+            self.widgets["labels"]["record_status"].configure(text="Recording")
+            self.widgets["images"]["record_status"].configure(light_image=Image.open("images/recording.png"), dark_image=Image.open("images/recording.png"), size=(40, 40))
+            self.widgets["labels"]["record_status_image"] = ctk.CTkLabel(self, text="", image=self.widgets["images"]["record_status"])
+        
