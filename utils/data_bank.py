@@ -19,6 +19,17 @@ class DataBank:
             "channels": {}
         }
         
+        # Add channels to data dictionary
         for category in CHANNELS:
             for channel in CHANNELS[category]:
                 self.data["channels"][channel] = 0  # 0 = don't log channel data, 1 = log channel data
+                
+    def enabled_channels(self):
+        """
+        Return a list of enabled channels
+        """
+        enabled_channels = []
+        for channel in self.data["channels"]:
+            if self.data["channels"][channel] == 1:
+                enabled_channels.append(channel)
+        return enabled_channels
