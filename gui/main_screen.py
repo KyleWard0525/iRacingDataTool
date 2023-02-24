@@ -31,7 +31,9 @@ class MainScreen(ctk.CTkFrame):
             "images": {},
             "tabs": {},
             "tooltips": {},
-            "inputs": {},
+            "inputs": {
+                "string_vars": {}    
+            },
             "frames": {}
         }
         
@@ -165,11 +167,11 @@ class MainScreen(ctk.CTkFrame):
         # Hide the current channel selection page and show the new one
         if "channel_page" in self.widgets["frames"]:
             self.widgets["frames"]["channel_page"].place_forget()
-            
+        
+        # Show the new channel selection page
         self.widgets["frames"]["channel_page"] = self.widgets["frames"][f"channel_page_{category}"]
-        self.widgets["frames"]["channel_page"].place(relx=0.5, rely=0.7, anchor="center")
+        self.widgets["frames"]["channel_page"].place(relx=0.5, rely=0.55, anchor="center")
             
-    
     def create_channel_category_page(self, category: str):
         """
         Create a selection page for the channels in a given category
@@ -182,12 +184,70 @@ class MainScreen(ctk.CTkFrame):
         if not f"channel_page_{category}" in self.widgets["frames"]:
             self.widgets["frames"][f"channel_page_{category}"] = ctk.CTkScrollableFrame(self.widgets["tabs"].tab("Channels"),
                                                                                 width=1260, 
-                                                                                height=720,
-                                                                                corner_radius=0
+                                                                                height=525,
+                                                                                corner_radius=0,
+                                                                                orientation="vertical",
                                                                                 )
+            
+        # Loop through channels in the category and create UI elements for each
+        for i, channel in enumerate(CHANNELS[category]):
+            # Create label for channel name
+            self.widgets["labels"][channel] = ctk.CTkLabel(self.widgets["frames"][f"channel_page_{category}"],
+                                                                text=f"{channel}: ",
+                                                                text_color=COLORS["text_white"],
+                                                                font=("Arial", self.input_label_font_size),
+                                                                )
+            self.widgets["labels"][channel].grid(row=i, column=0, padx=10, pady=10, sticky="w")    
+            
+            # Create label for channel description
+            self.widgets["labels"][f"{channel}_desc"] = ctk.CTkLabel(self.widgets["frames"][f"channel_page_{category}"],
+                                                                        text=f"{CHANNELS[category][channel]['desc']}", 
+                                                                        text_color=COLORS["text_white"],
+                                                                        font=("Arial", self.input_label_font_size)
+                                                                    )
+            self.widgets["labels"][f"{channel}_desc"].grid(row=i, column=1, padx=10, pady=10, sticky="w")    
+            
+            # Create label for channel unit
+            self.widgets["labels"][f"{channel}_unit"] = ctk.CTkLabel(self.widgets["frames"][f"channel_page_{category}"],
+                                                                        text=f"{CHANNELS[category][channel]['unit']}", 
+                                                                        text_color=COLORS["text_white"],
+                                                                        font=("Arial", self.input_label_font_size)
+                                                                    )
+            self.widgets["labels"][f"{channel}_unit"].grid(row=i, column=2, padx=20, pady=10, sticky="w")    
+                    
+            # Check if a string var exists for this channel
+            if not channel in self.widgets["inputs"]["string_vars"]:
+                self.widgets["inputs"]["string_vars"][channel] = ctk.StringVar()
+            
+            # Create toggle switch for channel
+            self.widgets["inputs"][f"log_{channel}"] = ctk.CTkSwitch(self.widgets["frames"][f"channel_page_{category}"],
+                                                                    text="",
+                                                                    command=lambda: self.toggle_channel(channel),
+                                                                    variable=self.widgets["inputs"]["string_vars"][channel],
+                                                                    onvalue="on",
+                                                                    offvalue="off"
+                                                                    )
+            self.widgets["inputs"][f"log_{channel}"].grid(row=i, column=3, padx=50, pady=10, sticky="e")
+                                                                                           
         
-        
-        
+    def toggle_channel(self, channel: str):
+        """
+        Toggle channel logging
+
+        Args:
+            channel (str): Channel name
+        """
+        # Check if channel is currently being logged
+        if self.widgets["inputs"]["string_vars"][channel].get() == "on":
+            # Enable logging channel
+            self.data_bank.data["channels"][channel] = True
+            
+            print(f"DEBUG: Logging enabled for channel '{channel}'")
+        else:
+            # Disable logging channel
+            self.data_bank.data["channels"][channel] = False
+            
+            print(f"DEBUG: Logging disabled for channel '{channel}'")
         
         
     def create_tooltips(self):
