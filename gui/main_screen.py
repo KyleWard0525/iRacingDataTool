@@ -10,6 +10,7 @@ from gui import COLORS
 from utils.data_bank import DataBank
 from tktooltip import ToolTip
 from logger import CHANNELS
+from functools import partial
 
 class MainScreen(ctk.CTkFrame):
     
@@ -75,8 +76,7 @@ class MainScreen(ctk.CTkFrame):
         
         # Create tooltips
         self.create_tooltips()
-        
-        
+          
     def create_tabs(self):
         """
         Create tabs for each screen
@@ -137,7 +137,6 @@ class MainScreen(ctk.CTkFrame):
                                                                       state="readonly",
                                                                       )
         self.widgets["inputs"]["category_dropdown"].place(relx=0.125, rely=0.05, anchor="w")
-        
         
     def update_channel_category(self, value):
         """
@@ -220,9 +219,10 @@ class MainScreen(ctk.CTkFrame):
                 self.widgets["inputs"]["string_vars"][channel] = ctk.StringVar()
             
             # Create toggle switch for channel
+            callback = partial(self.toggle_channel, channel)
             self.widgets["inputs"][f"log_{channel}"] = ctk.CTkSwitch(self.widgets["frames"][f"channel_page_{category}"],
-                                                                    text="",
-                                                                    command=lambda: self.toggle_channel(channel),
+                                                                    text=channel,
+                                                                    command=callback,
                                                                     variable=self.widgets["inputs"]["string_vars"][channel],
                                                                     onvalue="on",
                                                                     offvalue="off"
