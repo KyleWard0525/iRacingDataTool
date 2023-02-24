@@ -27,7 +27,7 @@ class iRacingTelemetryLogger:
         self.output_dir = self.data_dir + "\\outputs"
         self.recording = False
         self.polling_rate = 0.25    # Polling rate in seconds; 0.25 = 25Hz
-        self.data_precison = 5      # Number of decimal places to round data to
+        self.data_precison = 3      # Number of decimal places to round data to
         self.data_err_code = -((2**31) - 1)  # Error code for failed data retrieval from sim
         
         # Create dictionary to store telemetry data
