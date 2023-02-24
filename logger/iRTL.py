@@ -13,7 +13,7 @@ from datetime import datetime
 from threading import Thread
 
 sys.path.append(os.getcwd())
-from scripts.data_utils import parse_irsdk_vars
+from utils.data_utils import parse_irsdk_vars
 
 class iRacingTelemetryLogger:
     
@@ -83,6 +83,7 @@ class iRacingTelemetryLogger:
             print("\nERROR: Failed to connect to the iRacing SDK. Please ensure that the iRacing simulator is running\n")
             return False
          
+        # Start the telemetry logger
         self.recording = True
         self.telemetry_thread = Thread(target=self.run) 
         self.telemetry_thread.start()
@@ -142,8 +143,6 @@ class iRacingTelemetryLogger:
         """
         Run the telemetry logger
         """
-        print("\nRecording telemetry data...\n")
-        
         while self.recording:
             self.poll()
             time.sleep(self.polling_rate - 0.001)    # Subtract 1ms to account for processing time
