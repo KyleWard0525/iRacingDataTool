@@ -7,7 +7,7 @@ import os
 import sys
 
 sys.path.append(os.getcwd())
-from scripts.data_utils import parse_irsdk_vars
+from utils.data_utils import parse_irsdk_vars
 
 SDK_VARS = parse_irsdk_vars(os.getcwd() + "\\data\\irsdk_vars.txt")
 
