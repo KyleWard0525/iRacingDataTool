@@ -26,9 +26,9 @@ class iRacingTelemetryLogger:
         self.sdk_vars = parse_irsdk_vars(self.data_dir + "\\irsdk_vars.txt")
         self.output_dir = self.data_dir + "\\outputs"
         self.recording = False
-        self.polling_rate = 0.25    # Polling rate in seconds; 0.25 = 25Hz
+        self.polling_rate = 0.30    # Polling rate in seconds; 0.30 = 30Hz
         self.data_precison = 3      # Number of decimal places to round data to
-        self.data_err_code = -((2**31) - 1)  # Error code for failed data retrieval from sim
+        self.data_err_code = 0  # Error code for failed data retrieval from sim
         
         # Create dictionary to store telemetry data
         self.data = {
@@ -43,11 +43,13 @@ class iRacingTelemetryLogger:
             
             # Validate channels
             self.channels = [channel for channel in _channels if self.channel_exists(channel)]
+            
+            # Ensure 'Lap' is in the list of channels 
+            if not "Lap" in self.channels:
+                self.channels.append("Lap")
         else:
             # Create default list of channels to record
-            self.channels = ["Lap", "RPM", "Speed", "LatAccel", "LongAccel", "VertAccel", "Throttle", "Pitch", "Yaw", "Roll", "Gear",
-                            "Clutch", "Brake", "YawRate", "SteeringWheelAngle", "SteeringWheelTorque", "LapDist", "AirDensity", "AirTemp",
-                            "AirPressure", "WindDir", "WindVel"]
+            self.channels = ["Lap"]
             
         # Loop through channels to add and extract channel data from sdk vars
         for channel in self.channels:
@@ -72,6 +74,23 @@ class iRacingTelemetryLogger:
             
         return False
     
+    def update_channels(self):
+        """
+        Update the list of channels to record
+        """
+        # Loop through channels to add and extract channel data from sdk vars
+        for channel in self.channels:
+            # Read variable data from the sdk vars
+            _var = self.sdk_vars[channel]
+            
+            # Check if channel is in the session data
+            if not channel in self.data:
+                self.data[channel] = {
+                    "desc": _var["desc"],
+                    "unit": _var["unit"],
+                    "data": []
+                }
+    
     def start(self):
         """
         Start the telemetry logger
@@ -82,11 +101,15 @@ class iRacingTelemetryLogger:
         if not sdk_ready:
             print("\nERROR: Failed to connect to the iRacing SDK. Please ensure that the iRacing simulator is running\n")
             return False
-         
+        
+        # Update channels in data dictionary
+        self.update_channels()
+        
         # Start the telemetry logger
         self.recording = True
         self.telemetry_thread = Thread(target=self.run) 
         self.telemetry_thread.start()
+        return True
              
     def __filename(self):
         """
