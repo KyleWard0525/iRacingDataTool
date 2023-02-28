@@ -13,6 +13,7 @@ from logger import CHANNELS
 from functools import partial
 from logger.iRTL import iRacingTelemetryLogger
 from tkinter import messagebox
+from gui.plotting_tab import PlottingTab
 
 class MainScreen(ctk.CTkFrame):
     
@@ -93,6 +94,10 @@ class MainScreen(ctk.CTkFrame):
         # Create tabs
         self.create_home_tab()
         self.create_channels_tab()
+        
+        # Create plotting tab
+        self.widgets["tabs"].add("Plotting")
+        plotting_tab = PlottingTab(self.widgets["tabs"].tab("Plotting"), self.data_bank)
     
     def create_home_tab(self):
         """
@@ -110,6 +115,9 @@ class MainScreen(ctk.CTkFrame):
                                                                font=("Arial", self.btn_font_size),
                                                                cursor="hand2")
         self.widgets["buttons"]["btn_toggle_record"].place(relx=0.5, rely=0.5, anchor="center")
+    
+    
+    ###########     CHANNELS TAB     ###########
     
     def create_channels_tab(self):
         """
@@ -251,7 +259,10 @@ class MainScreen(ctk.CTkFrame):
             
             # Update enabled channels in the logger
             self.logger.channels = self.data_bank.enabled_channels()
-        
+
+    ###############################################
+    
+    
     def create_tooltips(self):
         """
         Create UI tooltips
