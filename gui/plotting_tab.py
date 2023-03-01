@@ -13,6 +13,10 @@ from gui import COLORS
 from logger import CHANNELS
 from tkinter import messagebox
 from tkinter import filedialog as fd
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, 
+NavigationToolbar2Tk)
+from logger.iRTLData import iRTLDataProcessor
 
 sys.path.append(os.getcwd())
 from utils.data_bank import DataBank
@@ -30,6 +34,9 @@ class PlottingTab(ctk.CTkFrame):
         self.root = root
         self.data_bank = data_bank
         self.data = None
+        self.data_processor = None
+        self.figure = None
+        self._plot = None
         
         # UI widgets
         self.widgets = {
@@ -49,6 +56,7 @@ class PlottingTab(ctk.CTkFrame):
         self.label_font_size = 20
         self.settings_font_size = 12
         
+        # Build UI widgets
         self.build_widgets()
         
     def build_widgets(self):
@@ -59,8 +67,6 @@ class PlottingTab(ctk.CTkFrame):
         # File select button
         self.widgets["buttons"]["file_select"] = ctk.CTkButton(self.root, text="Select Telemetry File", command=self.select_file, font=("Arial", self.btn_font_size))
         self.widgets["buttons"]["file_select"].grid(row=0, column=0, padx=10, pady=10)
-    
-        # Channel select button
         
     
     def __validate_telemetry_data(self, data):
@@ -102,6 +108,9 @@ class PlottingTab(ctk.CTkFrame):
         if not self.__validate_telemetry_data(data):
             return
         
+        # Create data processor
+        self.data_processor = iRTLDataProcessor(filename)
+        
         # Extract just the telemetry data
         self.data = {
             "time": data["time"],
@@ -127,14 +136,7 @@ class PlottingTab(ctk.CTkFrame):
             
         else:
             self.widgets["labels"]["telemetry_file"].config(text=f"{filename}")
-    
-    def update_channel_selection(self, value):
-        """
-        Update the current channel selection, including plot and settings
-        """
-        print(f"\nIn PlottingTab.update_channel_selection(): channel = {value}")
         
-    
     def create_plot_frame(self):
         """
         Create the plot frame
@@ -150,6 +152,8 @@ class PlottingTab(ctk.CTkFrame):
         # Create plot controls
         self.create_plot_controls()
 
+        # Create plot
+        self.plot()
         
     def create_plot_controls(self):
         """
@@ -191,7 +195,7 @@ class PlottingTab(ctk.CTkFrame):
         self.widgets["inputs"]["x_axis"] = ctk.CTkComboBox (
                                                         self.root,
                                                         values=channel_names,
-                                                        command=self.update_x_axis,
+                                                        command=self.update_axis,
                                                         font=("Arial", self.label_font_size),
                                                         state="readonly",
                                                         variable=self.widgets["inputs"]["string_vars"]["x_axis"]
@@ -208,13 +212,60 @@ class PlottingTab(ctk.CTkFrame):
         self.widgets["inputs"]["y_axis"] = ctk.CTkComboBox (
                                                         self.root,
                                                         values=channel_names,
-                                                        command=self.update_y_axis,
+                                                        command=self.update_axis,
                                                         font=("Arial", self.label_font_size),
                                                         state="readonly",
                                                         variable=self.widgets["inputs"]["string_vars"]["y_axis"]
                                                     )  
         self.widgets["inputs"]["y_axis"].place(relx=0.945, rely=0.65, anchor="center")
         
+    def plot(self):
+        """
+        Plot the data
+        """
+        
+        if not self.figure:
+            # Create figure
+            self.figure = Figure(figsize=(10, 5), dpi=100)
+        
+        # Check which lap is selected
+        lap = self.widgets["inputs"]["string_vars"]["selected_lap"].get()
+        x_axis_name = self.widgets["inputs"]["string_vars"]["x_axis"].get()
+        y_axis_name = self.widgets["inputs"]["string_vars"]["y_axis"].get()
+        
+        # Check lap selection
+        if not lap == "All Laps":
+            # Get lap number
+            lap_number = int(lap.split(" ")[-1])
+            
+            # Get x and y axis data
+            x_axis = self.data_processor.get_channel_data_for_lap(x_axis_name, lap_number)
+            y_axis = self.data_processor.get_channel_data_for_lap(y_axis_name, lap_number)
+            
+        else:
+            # Get x and y axis data for the entire stint
+            x_axis = self.data_processor.get_channel_data(x_axis_name)
+            y_axis = self.data_processor.get_channel_data(y_axis_name)
+            
+        
+        if not self._plot:
+            # Create plot
+            self._plot = self.figure.add_subplot(111)
+            self._plot.plot(x_axis, y_axis)
+            
+            # Create canvas
+            self.canvas = FigureCanvasTkAgg(self.figure, master=self.widgets["frames"]["plot_frame"])
+            self.canvas.draw()
+            self.canvas.get_tk_widget().pack()
+            
+            # Create toolbar
+            toolbar = NavigationToolbar2Tk(self.canvas, self.widgets["frames"]["plot_frame"])
+            toolbar.update()
+            self.canvas.get_tk_widget().pack()
+        else:
+            self._plot.clear()
+            self._plot.plot(x_axis, y_axis)
+            self.canvas.draw()
         
     def update_lap_selection(self, value):
         """
@@ -224,24 +275,17 @@ class PlottingTab(ctk.CTkFrame):
             value (_type_): _description_
         """
         
-        # TODO: Update plot
+        # Update plot
+        self.plot()
+    
+    def update_axis(self, value):
+        """
+        Update x-axis or y-axis channel selection
+
+        Args:
+            value (_type_): _description_
+        """
         
-        pass
-    
-    def update_x_axis(self, value):
-        """
-        Update x-axis channel selection
-
-        Args:
-            value (_type_): _description_
-        """
-        pass
-    
-    def update_y_axis(self, value):
-        """
-        Update y-axis channel selection
-
-        Args:
-            value (_type_): _description_
-        """
-        pass
+        # Update plot
+        self.plot()
+        
