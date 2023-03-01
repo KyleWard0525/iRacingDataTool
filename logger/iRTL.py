@@ -28,7 +28,8 @@ class iRacingTelemetryLogger:
         self.sdk_vars = parse_irsdk_vars(self.data_dir + "\\irsdk_vars.txt")
         self.output_dir = self.data_dir + "\\outputs"
         self.recording = False
-        self.polling_rate = 0.60    # Polling rate in seconds; 
+        self.polling_rate_hz = 60
+        self.polling_rate = 1.0 / self.polling_rate_hz    # Polling rate in seconds; 
         self.data_precison = 3      # Number of decimal places to round data to
         self.data_err_code = 0  # Error code for failed data retrieval from sim
         self.data_bank = data_bank
@@ -186,4 +187,3 @@ class iRacingTelemetryLogger:
         """
         while self.recording:
             self.poll()
-            time.sleep(self.polling_rate - 0.001)    # Subtract 1ms to account for processing time
