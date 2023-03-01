@@ -1,6 +1,7 @@
 AirDensity                        Density of air at start/finish line, kg/m^3
 AirPressure                       Pressure of air at start/finish line, Hg
 AirTemp                           Temperature of air at start/finish line, C
+Alt                               Altitude of car above sea level, m
 Brake                             0=brake released to 1=max pedal force, %
 BrakeABSactive                    true if abs is currently reducing brake force pressure,
 BrakeRaw                          Raw brake input 0=brake released to 1=max pedal force, %
@@ -112,7 +113,9 @@ LapDistPct                        Percentage distance around lap, %
 LapLasNLapSeq                     Player num consecutive clean laps completed for N average,
 LapLastLapTime                    Players last lap time, s
 LapLastNLapTime                   Player last N average lap time, s
+Lat                               Latitude in decimal degrees, deg
 LatAccel                          Lateral acceleration (including gravity), m/s^2
+Lon                               Longitude in decimal degrees, deg      
 LatAccel_ST                       Lateral acceleration (including gravity) at 360 Hz, m/s^2
 LeftTireSetsAvailable             How many left tire sets are remaining  255 is unlimited,
 LeftTireSetsUsed                  How many left tire sets used so far,
