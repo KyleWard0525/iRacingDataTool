@@ -66,8 +66,7 @@ class PlottingTab(ctk.CTkFrame):
         
         # File select button
         self.widgets["buttons"]["file_select"] = ctk.CTkButton(self.root, text="Select Telemetry File", command=self.select_file, font=("Arial", self.btn_font_size))
-        self.widgets["buttons"]["file_select"].grid(row=0, column=0, padx=10, pady=10)
-        
+        self.widgets["buttons"]["file_select"].grid(row=0, column=0, padx=10, pady=10)     
     
     def __validate_telemetry_data(self, data):
         # Check that the file contains at least one of the telemetry channels
@@ -135,7 +134,8 @@ class PlottingTab(ctk.CTkFrame):
             self.create_plot_frame()
             
         else:
-            self.widgets["labels"]["telemetry_file"].config(text=f"{filename}")
+            self.widgets["labels"]["telemetry_file"].configure(text=f"{filename}")
+            self.plot()
         
     def create_plot_frame(self):
         """
