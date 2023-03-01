@@ -4,6 +4,7 @@ Data processor for iRacing telemetry data
 Kyle Ward 2023    
 """
 import os
+import json
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -21,7 +22,8 @@ class iRTLDataProcessor:
             raise Exception(f"iRTLDataProcessor.__init__(): Datafile '{datafile_path}' not found!")
 
         # Read datafile
-        self.data = pd.read_json(datafile_path)
+        with open(datafile_path, "r") as f:
+            self.data = json.load(f)
         
         # Get the number of laps and lap points
         self.n_laps = np.max(self.data["Lap"]["data"])
@@ -40,6 +42,34 @@ class iRTLDataProcessor:
         
         return lap_pts
     
+    def get_lap_points(self, lap: int):
+        """
+        Get the start and endpoints for the given lap
+        """
+        return self.lap_points[lap-1]
+    
+    def get_channel_data_for_lap(self, channel: str, lap: int):
+        """
+        Get channel data for the specified lap
+
+        Args:
+            channel (str): channel name
+            lap (int): lap number
+        """
+        if not channel in self.data.keys():
+            return None
+        
+        lap_pts = self.get_lap_points(lap)
+        return self.data[channel]["data"][lap_pts[0]:lap_pts[1]]
+    
+    def get_channel_data(self, channel: str):
+        """
+        Get channel data for the entire session
+        """
+        if not channel in self.data.keys():
+            return None
+        return self.data[channel]["data"]
+    
     def get_lap_data(self, lap: int):
         """
         Get data for a specific lap
@@ -53,13 +83,6 @@ class iRTLDataProcessor:
         lap_data = {}
         for channel in self.data.keys():
             _data = np.array(self.data[channel]["data"][lap_pts[0]:lap_pts[1]])
-            
-            # Check for errors in the data
-            err_idxs = np.where(_data == -99999)[0]
-            
-            # Loop through the error indices and replace the error values with the previous value
-            for err_idx in err_idxs:
-                _data[err_idx] = _data[err_idx-1]
             
             # Check if channel unit is a percentage
             if self.data[channel]["unit"] == "%":
