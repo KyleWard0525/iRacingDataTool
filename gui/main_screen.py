@@ -14,6 +14,7 @@ from functools import partial
 from logger.iRTL import iRacingTelemetryLogger
 from tkinter import messagebox
 from gui.plotting_tab import PlottingTab
+from gui.live_monitor import LiveMonitor
 
 class MainScreen(ctk.CTkFrame):
     
@@ -29,7 +30,7 @@ class MainScreen(ctk.CTkFrame):
         self.data_bank = data_bank
         
         # Create telemetry logger object
-        self.logger = iRacingTelemetryLogger()
+        self.logger = iRacingTelemetryLogger(self.data_bank)
         
         # UI widgets
         self.widgets = {
@@ -98,6 +99,10 @@ class MainScreen(ctk.CTkFrame):
         # Create plotting tab
         self.widgets["tabs"].add("Plotting")
         plotting_tab = PlottingTab(self.widgets["tabs"].tab("Plotting"), self.data_bank)
+        
+        # Create live monitor tab
+        self.widgets["tabs"].add("Live Monitor")
+        self.live_monitor = LiveMonitor(self.widgets["tabs"].tab("Live Monitor"), self.data_bank)
     
     def create_home_tab(self):
         """
@@ -259,6 +264,9 @@ class MainScreen(ctk.CTkFrame):
             
             # Update enabled channels in the logger
             self.logger.channels = self.data_bank.enabled_channels()
+            
+        # Update live monitor channels
+        self.live_monitor.update_channels()
 
     ###############################################
     
