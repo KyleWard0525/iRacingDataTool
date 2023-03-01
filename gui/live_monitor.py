@@ -119,11 +119,15 @@ class LiveMonitor(ctk.CTkFrame):
         if channel_name != "":
             # Check if the figure has been created
             if not self.figure:
-                self.figure = Figure(figsize=(11, 5), dpi=100)
+                self.figure = Figure(figsize=(25, 11), dpi=50)
 
             # Get the channel data from the data bank
             x_axis = self.data_bank.data["live_telemetry"]["time"]["data"]
-            y_axis = self.data_bank.data["live_telemetry"][channel_name]["data"]        
+            y_axis = self.data_bank.data["live_telemetry"][channel_name]["data"]      
+            
+            if len(x_axis) > len(y_axis):
+                for _ in range(len(x_axis) - len(y_axis)):
+                    y_axis.append(0.0)
             
             if not self._plot:
                 # Create plot
@@ -139,6 +143,5 @@ class LiveMonitor(ctk.CTkFrame):
             else:
                 self._plot.clear()
                 self._plot.plot(x_axis, y_axis)
-                self._plot.set_xlabel(f"time ({self.data_bank.data['live_telemetry']['time']['unit']})")                    # Set x-axis label
                 self._plot.set_ylabel(f"{channel_name} ({self.data_bank.data['live_telemetry'][channel_name]['unit']})")    # Set y-axis label
                 self.canvas.draw()
