@@ -226,7 +226,7 @@ class PlottingTab(ctk.CTkFrame):
         
         if not self.figure:
             # Create figure
-            self.figure = Figure(figsize=(10, 5), dpi=100)
+            self.figure = Figure(figsize=(11, 5), dpi=100)
         
         # Check which lap is selected
         lap = self.widgets["inputs"]["string_vars"]["selected_lap"].get()
@@ -252,6 +252,8 @@ class PlottingTab(ctk.CTkFrame):
             # Create plot
             self._plot = self.figure.add_subplot(111)
             self._plot.plot(x_axis, y_axis)
+            self._plot.set_xlabel(f"{x_axis_name} ({self.data[x_axis_name]['unit']})")  # Set x-axis label
+            self._plot.set_ylabel(f"{y_axis_name} ({self.data[y_axis_name]['unit']})")  # Set y-axis label
             
             # Create canvas
             self.canvas = FigureCanvasTkAgg(self.figure, master=self.widgets["frames"]["plot_frame"])
@@ -265,6 +267,8 @@ class PlottingTab(ctk.CTkFrame):
         else:
             self._plot.clear()
             self._plot.plot(x_axis, y_axis)
+            self._plot.set_xlabel(f"{x_axis_name} ({self.data[x_axis_name]['unit']})")  # Set x-axis label
+            self._plot.set_ylabel(f"{y_axis_name} ({self.data[y_axis_name]['unit']})")  # Set y-axis label
             self.canvas.draw()
         
     def update_lap_selection(self, value):
