@@ -15,6 +15,7 @@ from threading import Thread
 sys.path.append(os.getcwd())
 from utils.data_utils import parse_irsdk_vars
 from utils.data_bank import DataBank
+from gui.live_monitor import LiveMonitor
 
 class iRacingTelemetryLogger:
     
@@ -27,10 +28,11 @@ class iRacingTelemetryLogger:
         self.sdk_vars = parse_irsdk_vars(self.data_dir + "\\irsdk_vars.txt")
         self.output_dir = self.data_dir + "\\outputs"
         self.recording = False
-        self.polling_rate = 0.30    # Polling rate in seconds; 0.30 = 30Hz
+        self.polling_rate = 0.60    # Polling rate in seconds; 
         self.data_precison = 3      # Number of decimal places to round data to
         self.data_err_code = 0  # Error code for failed data retrieval from sim
         self.data_bank = data_bank
+        self.live_monitor = None
         
         # Create dictionary to store telemetry data
         self.data = {
@@ -100,10 +102,13 @@ class iRacingTelemetryLogger:
                     "data": []
                 }
     
-    def start(self):
+    def start(self, live_monitor: LiveMonitor):
         """
         Start the telemetry logger
         """
+        if not self.live_monitor:
+            self.live_monitor = live_monitor
+        
         # Attempt to connect to iRacing
         sdk_ready = self.ir_sdk.startup()
         
@@ -144,7 +149,7 @@ class iRacingTelemetryLogger:
         # Check if file saved successfully
         output_path = self.output_dir + "\\" + filename
         if os.path.exists(output_path):
-            print(f"\nTelemetry data saved to {output_path}\n")
+            print(f"Telemetry data saved to {output_path}")
             return True
         else:
             return False
@@ -173,6 +178,7 @@ class iRacingTelemetryLogger:
             
         # Update the data bank with the latest data
         self.data_bank.data["live_telemetry"] = self.data
+        self.live_monitor.plot()
     
     def run(self):
         """
