@@ -97,10 +97,6 @@ class LiveMonitor(ctk.CTkFrame):
                                                             )
         self.widgets["frames"]["plot_frame"].place(relx=0.5, rely=0.55, anchor="center")
         
-        # Start plotting thread
-        # self.plot_thread = Thread(target=self.plot)
-        # self.plot_thread.start()
-        
     def update_channels(self):
         """
         Update channels in the channel select dropdown
