@@ -143,6 +143,10 @@ class iRacingTelemetryLogger:
         """
         self.recording = False
         filename = self.__filename()
+        
+        for channel_name, channel in self.data.items():
+            self.data[channel_name]["data"] = [round(val, self.data_precison) for val in channel["data"]]
+        
         # Save data to file
         with open(self.output_dir + "\\" + filename, "w") as f:
             json.dump(self.data, f)
@@ -167,13 +171,13 @@ class iRacingTelemetryLogger:
             # Attempt to poll the channel data from the sim
             _data = self.ir_sdk[channel_name]
             if _data:
-                channel["data"].append(round(_data, self.data_precison))
+                channel["data"].append(_data)
             else:
-                channel["data"].append(self.data_err_code)  # Failed to retrieve data from sim, set to -2147483647
+                channel["data"].append(self.data_err_code)  # Failed to retrieve data from sim
                 
         # Add session time to the data
         if len(self.data["time"]["data"]) > 1:
-            self.data["time"]["data"].append(round(self.data["time"]["data"][-1] + self.polling_rate, self.data_precison))
+            self.data["time"]["data"].append(self.data["time"]["data"][-1] + self.polling_rate)
         else:
             self.data["time"]["data"].append(0.0)    # First data point is 0.0
             
