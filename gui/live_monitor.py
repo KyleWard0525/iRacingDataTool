@@ -16,6 +16,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, 
 NavigationToolbar2Tk)
 from logger.iRTLData import iRTLDataProcessor
+from threading import Thread
 
 sys.path.append(os.getcwd())
 from utils.data_bank import DataBank
@@ -82,15 +83,66 @@ class LiveMonitor(ctk.CTkFrame):
                                                                     )
         self.widgets["inputs"]["channel_dropdown"].grid(row=0, column=1, padx=10, pady=10)
         
+        # Create plot frame
+        self.create_plot_frame()
+        
+    def create_plot_frame(self):
+        """
+        Create the UI frame for the plot
+        """
+        # Create frame
+        self.widgets["frames"]["plot_frame"] = ctk.CTkFrame(self.root,
+                                                            width=1250,
+                                                            height=550,
+                                                            )
+        self.widgets["frames"]["plot_frame"].place(relx=0.5, rely=0.55, anchor="center")
+        
+        # Start plotting thread
+        self.plot_thread = Thread(target=self.plot)
+        self.plot_thread.start()
+        
     def update_channels(self):
         """
         Update channels in the channel select dropdown
         """
         self.widgets["inputs"]["channel_dropdown"].configure(values=self.data_bank.enabled_channels())
         
-        
     def update_plot(self, val):
         """
         Update plot with new data
         """
-        pass
+        pass #self.plot()
+            
+    def plot(self):
+        """
+        Update plot with new data
+        """
+        # Get the name of the selected channel
+        channel_name = self.widgets["inputs"]["string_vars"]["channel_select"].get()
+        
+        if channel_name != "":
+            # Check if the figure has been created
+            if not self.figure:
+                self.figure = Figure(figsize=(11, 5), dpi=100)
+
+            # Get the channel data from the data bank
+            x_axis = self.data_bank.data["live_telemetry"]["time"]["data"]
+            y_axis = self.data_bank.data["live_telemetry"][channel_name]["data"]        
+            
+            if not self._plot:
+                # Create plot
+                self._plot = self.figure.add_subplot(111)
+                self._plot.plot(x_axis, y_axis)
+                self._plot.set_xlabel(f"time ({self.data_bank.data['live_telemetry']['time']['unit']})")                    # Set x-axis label
+                self._plot.set_ylabel(f"{channel_name} ({self.data_bank.data['live_telemetry'][channel_name]['unit']})")    # Set y-axis label
+                
+                # Create canvas
+                self.canvas = FigureCanvasTkAgg(self.figure, master=self.widgets["frames"]["plot_frame"])
+                self.canvas.draw()
+                self.canvas.get_tk_widget().pack()
+            else:
+                self._plot.clear()
+                self._plot.plot(x_axis, y_axis)
+                self._plot.set_xlabel(f"time ({self.data_bank.data['live_telemetry']['time']['unit']})")                    # Set x-axis label
+                self._plot.set_ylabel(f"{channel_name} ({self.data_bank.data['live_telemetry'][channel_name]['unit']})")    # Set y-axis label
+                self.canvas.draw()
