@@ -103,7 +103,7 @@ class MainScreen(ctk.CTkFrame):
         self.widgets["buttons"]["btn_toggle_record"].place(relx=0.85, rely=0.05, anchor="center")
         
         # Create tabs
-        self.create_home_tab()
+        #self.create_home_tab()
         self.create_channels_tab()
         
         # Create plotting tab
