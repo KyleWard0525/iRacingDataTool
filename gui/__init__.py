@@ -14,7 +14,9 @@ ctk.set_default_color_theme("dark-blue") # Dark blue theme
 
 COLORS = {
     "royal_purple": "#570091",
-    "btn_hover": "#3c0063",
-    "text_white": "#e3e3e3"
+    "btn_hover": "#032687",
+    "text_white": "#e3e3e3",
+    "text_red": "#d10d1d",
+    "text_blue": "#132fba"
 }
 
