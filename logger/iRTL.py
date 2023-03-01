@@ -14,10 +14,11 @@ from threading import Thread
 
 sys.path.append(os.getcwd())
 from utils.data_utils import parse_irsdk_vars
+from utils.data_bank import DataBank
 
 class iRacingTelemetryLogger:
     
-    def __init__(self, **kwargs):
+    def __init__(self, data_bank: DataBank, **kwargs):
         """
         Initialize the logger
         """
@@ -29,12 +30,15 @@ class iRacingTelemetryLogger:
         self.polling_rate = 0.30    # Polling rate in seconds; 0.30 = 30Hz
         self.data_precison = 3      # Number of decimal places to round data to
         self.data_err_code = 0  # Error code for failed data retrieval from sim
+        self.data_bank = data_bank
         
         # Create dictionary to store telemetry data
         self.data = {
             # channel_name: {"desc": str, "unit": str, "data": []}
             "time": {"desc": "Session time", "unit": "s", "data": []}
         }
+        
+        default_channels = ["Lap", "LapDist", "Alt", "Lat", "Lon"]
         
         # Check if list of channels to record is provided
         self.channels = []
@@ -45,11 +49,16 @@ class iRacingTelemetryLogger:
             self.channels = [channel for channel in _channels if self.channel_exists(channel)]
             
             # Ensure 'Lap' is in the list of channels 
-            if not "Lap" in self.channels:
-                self.channels.append("Lap")
+            for def_channel in default_channels:
+                if not def_channel in self.channels:
+                    self.channels.append(def_channel)
         else:
             # Create default list of channels to record
-            self.channels = ["Lap"]
+            self.channels = default_channels
+            
+        # Update channels in the databank
+        for channel in self.channels:
+            self.data_bank.data["channels"][channel] = 1
             
         # Loop through channels to add and extract channel data from sdk vars
         for channel in self.channels:
@@ -161,6 +170,9 @@ class iRacingTelemetryLogger:
             self.data["time"]["data"].append(round(self.data["time"]["data"][-1] + self.polling_rate, self.data_precison))
         else:
             self.data["time"]["data"].append(0.0)    # First data point is 0.0
+            
+        # Update the data bank with the latest data
+        self.data_bank.data["live_telemetry"] = self.data
     
     def run(self):
         """
