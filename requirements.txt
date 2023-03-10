@@ -4,3 +4,4 @@ matplotlib
 pyirsdk
 customtkinter
 tkinter-tooltip
+pyinstaller
