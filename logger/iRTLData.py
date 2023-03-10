@@ -28,7 +28,7 @@ class iRTLDataProcessor:
         if self.data["Lap"]["data"][0] > 0:
             start_lap = self.data["Lap"]["data"][0]
             for i, point in enumerate(self.data["Lap"]["data"]):
-                self.data["Lap"]["data"][i] = point - start_lap + 1
+                self.data["Lap"]["data"][i] = point - start_lap
         
         # Get the number of laps and lap points
         self.n_laps = np.max(self.data["Lap"]["data"])
