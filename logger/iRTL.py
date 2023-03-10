@@ -41,7 +41,7 @@ class iRacingTelemetryLogger:
             "time": {"desc": "Session time", "unit": "s", "data": []}
         }
         
-        default_channels = ["Lap", "LapDist", "Alt", "Lat", "Lon"]
+        default_channels = ["Lap", "LapDist"]
         
         # Check if list of channels to record is provided
         self.channels = []
