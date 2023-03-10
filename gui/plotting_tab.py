@@ -117,7 +117,7 @@ class PlottingTab(ctk.CTkFrame):
         for category in CHANNELS:
             for channel in CHANNELS[category]:
                 if channel in data:
-                    self.data[channel] = data[channel]
+                    self.data[channel] = self.data_processor.data[channel]
         
         # Remove path from filename
         filename = filename.split("/")[-1]
