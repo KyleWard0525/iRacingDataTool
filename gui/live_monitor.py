@@ -119,7 +119,7 @@ class LiveMonitor(ctk.CTkFrame):
         if channel_name != "":
             # Check if the figure has been created
             if not self.figure:
-                self.figure = Figure(figsize=(12, 6), dpi=100)
+                self.figure = Figure(figsize=(15, 7), dpi=100)
 
             # Get the channel data from the data bank
             x_axis = self.data_bank.data["live_telemetry"]["time"]["data"]
