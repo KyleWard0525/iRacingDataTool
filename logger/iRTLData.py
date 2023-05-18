@@ -24,37 +24,43 @@ class iRTLDataProcessor:
         # Read datafile
         with open(datafile_path, "r") as f:
             self.data = json.load(f)
-            
-        if self.data["Lap"]["data"][0] > 0:
-            start_lap = self.data["Lap"]["data"][0]
-            for i, point in enumerate(self.data["Lap"]["data"]):
-                self.data["Lap"]["data"][i] = point - start_lap
+        
+        # Preprocess the data
+        #self.__preprocess_data()
         
         # Get the number of laps and lap points
         self.n_laps = np.max(self.data["Lap"]["data"])
         self.lap_points = self.__get_lap_points()
     
+    def __preprocess_data(self):
+        """
+        Preprocess the data
+        """
+        # Ensure laps start at 0
+        lap_data = np.array(self.data["Lap"]["data"])
+        lap_diff_idxs = np.where(np.diff(lap_data) > 0)[0]
+        pass
+        
     def __get_lap_points(self):
         """
         Get the start and end points for each lap
         """
-        # Find lap endpoints
-        min_lap = self.data["Lap"]["data"][0]
-        max_lap = self.data["Lap"]["data"][-1]
-        
+        lap_data = self.data["Lap"]["data"]
         lap_pts = np.zeros(shape=(self.n_laps,2))
-        for lap in range(self.n_laps):
-            _pts = np.where(self.data["Lap"]["data"] == self.n_laps - lap)[0]
-            lap_pts[lap] = [np.min(_pts), np.max(_pts)]
-        lap_pts = np.flipud(lap_pts).astype(int)
-        
-        return lap_pts
+        lap_end_pts = np.where(np.abs(np.diff(lap_data)) > 0)[0]
+        for i, end_pt in enumerate(lap_end_pts):
+            if i == 0:
+                lap_pts[i] = [0, end_pt]
+            else:
+                lap_pts[i] = [lap_end_pts[i-1]+1, end_pt]
+        lap_pts = np.append(lap_pts, [[lap_end_pts[-1]+1, len(lap_data)-1]], axis=0).astype(int)
+        return lap_pts 
     
     def get_lap_points(self, lap: int):
         """
         Get the start and endpoints for the given lap
         """
-        return self.lap_points[lap-1]
+        return self.lap_points[lap]
     
     def get_channel_data_for_lap(self, channel: str, lap: int):
         """
@@ -86,7 +92,7 @@ class iRTLDataProcessor:
             raise Exception(f"iRTLDataProcessor.get_lap_data(): Lap {lap} does not exist!")
         
         # Get the lap points for the specified lap
-        lap_pts = self.lap_points[lap-1]
+        lap_pts = self.lap_points[lap]
         
         lap_data = {}
         for channel in self.data.keys():
@@ -112,7 +118,7 @@ class iRTLDataProcessor:
             raise Exception(f"iRTLDataProcessor.get_lap_time(): Lap {lap} does not exist!")
         
         # Get the lap points for the specified lap
-        lap_pts = self.lap_points[lap-1]
+        lap_pts = self.lap_points[lap]
         return self.data["time"]["data"][lap_pts[1]] - self.data["time"]["data"][lap_pts[0]]
     
     def plot_channel_across_lap(self, channel: str, lap: int):
@@ -157,7 +163,7 @@ class iRTLDataProcessor:
         # Iterate through each lap
         for lap in range(self.n_laps):
             # Append the lap time to the time data
-            lap_data = self.get_lap_data(lap+1)
+            lap_data = self.get_lap_data(lap)
             channel_data = np.concatenate((channel_data, lap_data[channel]["data"]))
             time_data = np.concatenate((time_data, lap_data["time"]["data"]))
             
