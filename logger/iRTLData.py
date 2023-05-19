@@ -1,7 +1,7 @@
 """
 Data processor for iRacing telemetry data
 
-Kyle Ward 2023    
+Copyright © Kyle Ward 2023    
 """
 import os
 import json

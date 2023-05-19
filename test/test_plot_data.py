@@ -1,5 +1,7 @@
 """
-Test cases for plotting telemetry data    
+Test cases for plotting telemetry data  
+
+Copyright © Kyle Ward 2023
 """
 import os
 import pandas as pd

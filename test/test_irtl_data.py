@@ -1,7 +1,7 @@
 """
 Test cases for iRTLData
 
-Kyle Ward 2023    
+Copyright © Kyle Ward 2023        
 """
 import os
 import sys
