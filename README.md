@@ -18,7 +18,7 @@ Once the user has selected the channels they want to record and the iRacing Simu
 
 ![Channel Selection](images/readme/channel_selection.png)
 
-**NOTE:** Telemetry files will be automatically saved to `data/outputs/iRTL_<month>-<day>-<year>_<hour>-<minute>-<second>.json` when the users presses the "Stop Recording" button.
+**NOTE:** Telemetry files will be automatically saved to `data/outputs/iRTL_<month>-<day>-<year>_<hour>-<minute>-<second>.json`, when the users presses the "Stop Recording" button.
 
 ### Data Visualization (Plotting tab)
 
