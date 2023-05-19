@@ -1,7 +1,7 @@
 """
 Initialize logger module
 
-Kyle Ward 2023    
+Copyright © Kyle Ward 2023     
 """
 import os
 import sys

@@ -1,5 +1,7 @@
 """
-Data utilities for iRTL    
+Data utilities for iRTL   
+
+Copyright © Kyle Ward 2023
 """
 import os
 import sys

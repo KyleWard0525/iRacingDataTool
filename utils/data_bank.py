@@ -16,7 +16,8 @@ class DataBank:
         # Initialize internal data dictionary
         self.data = {
             "is_recording": False,
-            "channels": {}
+            "channels": {},
+            "live_telemetry": {},
         }
         
         # Add channels to data dictionary

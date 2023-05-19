@@ -1,5 +1,7 @@
 """
-Test cases for learning how to use pyirsdk    
+Test cases for learning how to use pyirsdk  
+
+Copyright © Kyle Ward 2023
 """
 import os
 import irsdk

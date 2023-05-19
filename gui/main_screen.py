@@ -6,7 +6,7 @@ Copyright © Kyle Ward 2023
 import tkinter as tk
 import customtkinter as ctk
 from PIL import Image
-from gui import COLORS
+from gui import COLORS, APP_METADATA
 from utils.data_bank import DataBank
 from tktooltip import ToolTip
 from logger import CHANNELS
@@ -14,6 +14,7 @@ from functools import partial
 from logger.iRTL import iRacingTelemetryLogger
 from tkinter import messagebox
 from gui.plotting_tab import PlottingTab
+from gui.live_monitor import LiveMonitor
 
 class MainScreen(ctk.CTkFrame):
     
@@ -29,7 +30,7 @@ class MainScreen(ctk.CTkFrame):
         self.data_bank = data_bank
         
         # Create telemetry logger object
-        self.logger = iRacingTelemetryLogger()
+        self.logger = iRacingTelemetryLogger(self.data_bank)
         
         # UI widgets
         self.widgets = {
@@ -60,7 +61,7 @@ class MainScreen(ctk.CTkFrame):
         """
         # Create title label
         self.widgets["labels"]["title"] = ctk.CTkLabel(self, text="iRacing Telemetry Logger", text_color=COLORS["text_white"], font=("Arial", self.title_font_size))
-        self.widgets["labels"]["title"].place(relx=0.5, rely=0.05, anchor="center")
+        self.widgets["labels"]["title"].place(relx=0.5, rely=0.035, anchor="center")
         
         
         # Create 'Recording' status image
@@ -76,13 +77,21 @@ class MainScreen(ctk.CTkFrame):
         self.widgets["labels"]["record_status_image"] = ctk.CTkLabel(self, text="", image=self.widgets["images"]["record_status"])
         self.widgets["labels"]["record_status_image"].place(relx=0.0295, rely=0.05, anchor="center")
         
-        
+        # Add metadata labels
+        self.widgets["labels"]["version"] = ctk.CTkLabel(
+            self,
+            text=APP_METADATA["version"],
+            text_color=COLORS["text_white"],
+            font=("Arial", 12)
+        )
+        self.widgets["labels"]["version"].place(relx=0.5, rely=0.0575)
+
         # Create tabs
         self.create_tabs()
         
         # Create tooltips
         self.create_tooltips()
-          
+
     def create_tabs(self):
         """
         Create tabs for each screen
@@ -91,13 +100,27 @@ class MainScreen(ctk.CTkFrame):
         self.widgets["tabs"] = ctk.CTkTabview(self.root)
         self.widgets["tabs"].place(relx=0.5, rely=0.55, relwidth=1, relheight=0.9, anchor="center")
         
+        # Build buttons
+        self.widgets["buttons"]["btn_toggle_record"] = ctk.CTkButton(self.root, 
+                                                               text="Start Recording", 
+                                                               command=self.toggle_recording, 
+                                                               hover_color=COLORS["btn_hover"],
+                                                               fg_color=COLORS["text_blue"],
+                                                               font=("Arial", self.btn_font_size),
+                                                               cursor="hand2")
+        self.widgets["buttons"]["btn_toggle_record"].place(relx=0.85, rely=0.05, anchor="center")
+        
         # Create tabs
-        self.create_home_tab()
+        #self.create_home_tab()
         self.create_channels_tab()
         
         # Create plotting tab
         self.widgets["tabs"].add("Plotting")
         plotting_tab = PlottingTab(self.widgets["tabs"].tab("Plotting"), self.data_bank)
+        
+        # Create live monitor tab
+        self.widgets["tabs"].add("Live Monitor")
+        self.live_monitor = LiveMonitor(self.widgets["tabs"].tab("Live Monitor"), self.data_bank)
     
     def create_home_tab(self):
         """
@@ -106,16 +129,6 @@ class MainScreen(ctk.CTkFrame):
         # Add a frame to the tab view for the home tab
         self.widgets["tabs"].add("Home")
         
-        # Build buttons
-        self.widgets["buttons"]["btn_toggle_record"] = ctk.CTkButton(self.widgets["tabs"].tab("Home"), 
-                                                               text="Toggle Recording", 
-                                                               command=self.toggle_recording, 
-                                                               fg_color=COLORS["royal_purple"],
-                                                               hover_color=COLORS["btn_hover"],
-                                                               font=("Arial", self.btn_font_size),
-                                                               cursor="hand2")
-        self.widgets["buttons"]["btn_toggle_record"].place(relx=0.5, rely=0.5, anchor="center")
-    
     
     ###########     CHANNELS TAB     ###########
     
@@ -259,6 +272,9 @@ class MainScreen(ctk.CTkFrame):
             
             # Update enabled channels in the logger
             self.logger.channels = self.data_bank.enabled_channels()
+            
+        # Update live monitor channels
+        self.live_monitor.update_channels()
 
     ###############################################
     
@@ -285,12 +301,15 @@ class MainScreen(ctk.CTkFrame):
             self.widgets["labels"]["record_status"].configure(text="Not recording")
             self.widgets["images"]["record_status"].configure(light_image=Image.open("images/circle.png"), dark_image=Image.open("images/circle.png"), size=(35, 35))
             self.widgets["labels"]["record_status_image"] = ctk.CTkLabel(self, text="", image=self.widgets["images"]["record_status"])
+            
+            # Reconfigure record button
+            self.widgets["buttons"]["btn_toggle_record"].configure(text="Start recording", fg_color=COLORS["text_blue"])
         else:
             # Start recording
             self.data_bank.data["is_recording"] = True
             
             # Attempt to start the telemetry logger
-            if not self.logger.start():
+            if not self.logger.start(self.live_monitor):
                 messagebox.showerror("Error", "ERROR: Failed to connect to the iRacing SDK. Please ensure that the iRacing simulator is running and try again.")
                 return
             
@@ -298,4 +317,7 @@ class MainScreen(ctk.CTkFrame):
             self.widgets["labels"]["record_status"].configure(text="Recording")
             self.widgets["images"]["record_status"].configure(light_image=Image.open("images/recording.png"), dark_image=Image.open("images/recording.png"), size=(40, 40))
             self.widgets["labels"]["record_status_image"] = ctk.CTkLabel(self, text="", image=self.widgets["images"]["record_status"])
+            
+            # Reconfigure record button
+            self.widgets["buttons"]["btn_toggle_record"].configure(text="Stop recording", fg_color=COLORS["text_red"])
         

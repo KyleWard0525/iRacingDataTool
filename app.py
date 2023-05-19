@@ -1,5 +1,7 @@
 """
 Tkinter app for iRacing Telemetry logger    
+
+Copyright © Kyle Ward 2023
 """
 import tkinter as tk
 import customtkinter as ctk

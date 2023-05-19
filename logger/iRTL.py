@@ -14,10 +14,12 @@ from threading import Thread
 
 sys.path.append(os.getcwd())
 from utils.data_utils import parse_irsdk_vars
+from utils.data_bank import DataBank
+from gui.live_monitor import LiveMonitor
 
 class iRacingTelemetryLogger:
     
-    def __init__(self, **kwargs):
+    def __init__(self, data_bank: DataBank, **kwargs):
         """
         Initialize the logger
         """
@@ -26,15 +28,20 @@ class iRacingTelemetryLogger:
         self.sdk_vars = parse_irsdk_vars(self.data_dir + "\\irsdk_vars.txt")
         self.output_dir = self.data_dir + "\\outputs"
         self.recording = False
-        self.polling_rate = 0.30    # Polling rate in seconds; 0.30 = 30Hz
+        self.polling_rate_hz = 60
+        self.polling_rate = 1.0 / self.polling_rate_hz    # Polling rate in seconds; 
         self.data_precison = 3      # Number of decimal places to round data to
         self.data_err_code = 0  # Error code for failed data retrieval from sim
+        self.data_bank = data_bank
+        self.live_monitor = None
         
         # Create dictionary to store telemetry data
         self.data = {
             # channel_name: {"desc": str, "unit": str, "data": []}
             "time": {"desc": "Session time", "unit": "s", "data": []}
         }
+        
+        default_channels = ["Lap", "LapDist"]
         
         # Check if list of channels to record is provided
         self.channels = []
@@ -45,11 +52,16 @@ class iRacingTelemetryLogger:
             self.channels = [channel for channel in _channels if self.channel_exists(channel)]
             
             # Ensure 'Lap' is in the list of channels 
-            if not "Lap" in self.channels:
-                self.channels.append("Lap")
+            for def_channel in default_channels:
+                if not def_channel in self.channels:
+                    self.channels.append(def_channel)
         else:
             # Create default list of channels to record
-            self.channels = ["Lap"]
+            self.channels = default_channels
+            
+        # Update channels in the databank
+        for channel in self.channels:
+            self.data_bank.data["channels"][channel] = 1
             
         # Loop through channels to add and extract channel data from sdk vars
         for channel in self.channels:
@@ -91,10 +103,13 @@ class iRacingTelemetryLogger:
                     "data": []
                 }
     
-    def start(self):
+    def start(self, live_monitor: LiveMonitor):
         """
         Start the telemetry logger
         """
+        if not self.live_monitor:
+            self.live_monitor = live_monitor
+        
         # Attempt to connect to iRacing
         sdk_ready = self.ir_sdk.startup()
         
@@ -128,6 +143,10 @@ class iRacingTelemetryLogger:
         """
         self.recording = False
         filename = self.__filename()
+        
+        for channel_name, channel in self.data.items():
+            self.data[channel_name]["data"] = [round(val, self.data_precison) for val in channel["data"]]
+        
         # Save data to file
         with open(self.output_dir + "\\" + filename, "w") as f:
             json.dump(self.data, f)
@@ -135,7 +154,7 @@ class iRacingTelemetryLogger:
         # Check if file saved successfully
         output_path = self.output_dir + "\\" + filename
         if os.path.exists(output_path):
-            print(f"\nTelemetry data saved to {output_path}\n")
+            print(f"Telemetry data saved to {output_path}")
             return True
         else:
             return False
@@ -152,15 +171,19 @@ class iRacingTelemetryLogger:
             # Attempt to poll the channel data from the sim
             _data = self.ir_sdk[channel_name]
             if _data:
-                channel["data"].append(round(_data, self.data_precison))
+                channel["data"].append(_data)
             else:
-                channel["data"].append(self.data_err_code)  # Failed to retrieve data from sim, set to -2147483647
+                channel["data"].append(self.data_err_code)  # Failed to retrieve data from sim
                 
         # Add session time to the data
         if len(self.data["time"]["data"]) > 1:
-            self.data["time"]["data"].append(round(self.data["time"]["data"][-1] + self.polling_rate, self.data_precison))
+            self.data["time"]["data"].append(self.data["time"]["data"][-1] + self.polling_rate)
         else:
             self.data["time"]["data"].append(0.0)    # First data point is 0.0
+            
+        # Update the data bank with the latest data
+        self.data_bank.data["live_telemetry"] = self.data
+        self.live_monitor.plot()
     
     def run(self):
         """
@@ -168,4 +191,3 @@ class iRacingTelemetryLogger:
         """
         while self.recording:
             self.poll()
-            time.sleep(self.polling_rate - 0.001)    # Subtract 1ms to account for processing time

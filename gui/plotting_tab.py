@@ -117,7 +117,7 @@ class PlottingTab(ctk.CTkFrame):
         for category in CHANNELS:
             for channel in CHANNELS[category]:
                 if channel in data:
-                    self.data[channel] = data[channel]
+                    self.data[channel] = self.data_processor.data[channel]
         
         # Remove path from filename
         filename = filename.split("/")[-1]
@@ -168,10 +168,10 @@ class PlottingTab(ctk.CTkFrame):
         
         # Get number of laps and create lap choices
         n_laps = np.max(self.data["Lap"]["data"])
-        lap_numbers = np.arange(1, n_laps + 1)
+        lap_numbers = np.arange(0, n_laps+1)
         lap_choices = ["All Laps"]
         for lap in lap_numbers:
-            lap_choices.append(f"Lap {lap}")
+            lap_choices.append(f"Lap {lap+1}")
         
         # Create lap select dropdown    
         self.widgets["inputs"]["lap_dropdown"] = ctk.CTkComboBox (
@@ -239,8 +239,8 @@ class PlottingTab(ctk.CTkFrame):
             lap_number = int(lap.split(" ")[-1])
             
             # Get x and y axis data
-            x_axis = self.data_processor.get_channel_data_for_lap(x_axis_name, lap_number)
-            y_axis = self.data_processor.get_channel_data_for_lap(y_axis_name, lap_number)
+            x_axis = self.data_processor.get_channel_data_for_lap(x_axis_name, lap_number-1)
+            y_axis = self.data_processor.get_channel_data_for_lap(y_axis_name, lap_number-1)
             
         else:
             # Get x and y axis data for the entire stint
@@ -271,7 +271,7 @@ class PlottingTab(ctk.CTkFrame):
             self._plot.set_ylabel(f"{y_axis_name} ({self.data[y_axis_name]['unit']})")  # Set y-axis label
             self.canvas.draw()
         
-    def update_lap_selection(self, value):
+    def update_lap_selection(self, _):
         """
         Update lap selection
 
@@ -282,7 +282,7 @@ class PlottingTab(ctk.CTkFrame):
         # Update plot
         self.plot()
     
-    def update_axis(self, value):
+    def update_axis(self, _):
         """
         Update x-axis or y-axis channel selection
 
