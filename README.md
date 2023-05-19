@@ -14,7 +14,7 @@ The Channel Selection tab allows the user to select which channels they would li
 
 The tool currently supports logging **102 unique channels across 8 different categories** with the ability to add more in the future. 
 
-Once the user has selected the channels they want to record and the iRacing Simulator is running, click the blue "Start Recording" button in the upper-right hand corner to begin recording data.
+Once the user has selected the channels they want to record and the iRacing Simulator is running, click the blue `Start Recording` button in the upper-right hand corner to begin recording data.
 
 ![Channel Selection](images/readme/channel_selection.png)
 
