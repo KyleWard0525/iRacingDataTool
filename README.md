@@ -6,6 +6,22 @@ An app for recording, visualizing, and analyzing iRacing telemetry. The tool can
 - There is no development schedule for this tool, so updates may be sporadic.
 - This tool uses the iRacing SDK and thus requires the iRacing Simulator to be running in order to record data.
 - If you have any comments, suggestions, or would like to contribute to the app, please let me know. Improvements are always welcome.
+
+## 1. Setup / Install
+1) Install Python 3.10: https://www.python.org/downloads/release/python-31010/ ***(Skip this step if you already have Python installed)***
+2) Clone this repo: `git clone https://github.com/KyleWard0525/iRacingDataTool.git`
+3) Navigate to the repo directory: `cd <path to iRacingDataTool>`
+4) Create a virtual environment: `python -m venv venv`
+5) Activate the virtual environment: `.\venv\Scripts\activate`
+6) Install required python packages: `pip install -r requirements.txt`
+
+## 2. Running the app
+
+1) In the iRacingDataTool directory, ensure the virtual environment is active: `.\venv\Scripts\activate`
+2) Run: `python app.py` 
+
+<br />
+
 ## Features
 
 ### Channel Selection 
