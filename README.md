@@ -38,7 +38,7 @@ The Live Monitor allows users to select a channel to plot in real-time.
 - Real-time plot will be displayed in the gray area when the user starts recording
 
 
-### Roadmap
+## Roadmap
 
 **NOTE:** This is not a comprehensive list of features that will be added to the tool. This is just a list of features I would like to add at some point in the future.
 
