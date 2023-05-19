@@ -6,7 +6,7 @@ Copyright © Kyle Ward 2023
 import tkinter as tk
 import customtkinter as ctk
 from PIL import Image
-from gui import COLORS
+from gui import COLORS, APP_METADATA
 from utils.data_bank import DataBank
 from tktooltip import ToolTip
 from logger import CHANNELS
@@ -61,7 +61,7 @@ class MainScreen(ctk.CTkFrame):
         """
         # Create title label
         self.widgets["labels"]["title"] = ctk.CTkLabel(self, text="iRacing Telemetry Logger", text_color=COLORS["text_white"], font=("Arial", self.title_font_size))
-        self.widgets["labels"]["title"].place(relx=0.5, rely=0.05, anchor="center")
+        self.widgets["labels"]["title"].place(relx=0.5, rely=0.035, anchor="center")
         
         
         # Create 'Recording' status image
@@ -77,13 +77,21 @@ class MainScreen(ctk.CTkFrame):
         self.widgets["labels"]["record_status_image"] = ctk.CTkLabel(self, text="", image=self.widgets["images"]["record_status"])
         self.widgets["labels"]["record_status_image"].place(relx=0.0295, rely=0.05, anchor="center")
         
-        
+        # Add metadata labels
+        self.widgets["labels"]["version"] = ctk.CTkLabel(
+            self,
+            text=APP_METADATA["version"],
+            text_color=COLORS["text_white"],
+            font=("Arial", 12)
+        )
+        self.widgets["labels"]["version"].place(relx=0.5, rely=0.0575)
+
         # Create tabs
         self.create_tabs()
         
         # Create tooltips
         self.create_tooltips()
-          
+
     def create_tabs(self):
         """
         Create tabs for each screen
@@ -121,8 +129,6 @@ class MainScreen(ctk.CTkFrame):
         # Add a frame to the tab view for the home tab
         self.widgets["tabs"].add("Home")
         
-        
-    
     
     ###########     CHANNELS TAB     ###########
     
