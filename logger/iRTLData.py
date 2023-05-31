@@ -29,7 +29,7 @@ class iRTLDataProcessor:
         #self.__preprocess_data()
         
         # Get the number of laps and lap points
-        self.n_laps = np.max(self.data["Lap"]["data"])
+        self.n_laps = np.max(self.data["Lap"]["data"]) - np.min(self.data["Lap"]["data"])
         self.lap_points = self.__get_lap_points()
     
     def __preprocess_data(self):
@@ -37,8 +37,13 @@ class iRTLDataProcessor:
         Preprocess the data
         """
         # Ensure laps start at 0
-        lap_data = np.array(self.data["Lap"]["data"])
-        lap_diff_idxs = np.where(np.diff(lap_data) > 0)[0]
+        # lap_data = np.array(self.data["Lap"]["data"])
+        # lap_diff_idxs = np.where(np.diff(lap_data) > 0)[0]
+
+        # Loop through each channel and convert metric to imperial
+        #for channel in self.data:
+            # Check if the unit is metric
+
         pass
         
     def __get_lap_points(self):

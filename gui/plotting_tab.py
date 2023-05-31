@@ -167,7 +167,7 @@ class PlottingTab(ctk.CTkFrame):
         self.widgets["inputs"]["string_vars"]["selected_lap"] = tk.StringVar(self.root, value="All Laps")
         
         # Get number of laps and create lap choices
-        n_laps = np.max(self.data["Lap"]["data"])
+        n_laps = np.max(self.data["Lap"]["data"]) - np.min(self.data["Lap"]["data"])
         lap_numbers = np.arange(0, n_laps+1)
         lap_choices = ["All Laps"]
         for lap in lap_numbers:
@@ -246,14 +246,26 @@ class PlottingTab(ctk.CTkFrame):
             # Get x and y axis data for the entire stint
             x_axis = self.data_processor.get_channel_data(x_axis_name)
             y_axis = self.data_processor.get_channel_data(y_axis_name)
-            
+        
+        y_axis = np.array(y_axis)
+        y_axis_unit = self.data[y_axis_name]["unit"]
+
+        # Check if unit is in rad/s
+        if y_axis_unit == "rad/s":
+            # Convert to deg/s
+            y_axis *= 180.0/np.pi
+            y_axis_unit = "deg/s"
+        elif y_axis_unit == "rad":
+            # Convert to deg
+            y_axis *= 180/np.pi
+            y_axis_unit = "deg"
         
         if not self._plot:
             # Create plot
             self._plot = self.figure.add_subplot(111)
             self._plot.plot(x_axis, y_axis)
             self._plot.set_xlabel(f"{x_axis_name} ({self.data[x_axis_name]['unit']})")  # Set x-axis label
-            self._plot.set_ylabel(f"{y_axis_name} ({self.data[y_axis_name]['unit']})")  # Set y-axis label
+            self._plot.set_ylabel(f"{y_axis_name} ({y_axis_unit})")  # Set y-axis label
             
             # Create canvas
             self.canvas = FigureCanvasTkAgg(self.figure, master=self.widgets["frames"]["plot_frame"])
@@ -268,7 +280,7 @@ class PlottingTab(ctk.CTkFrame):
             self._plot.clear()
             self._plot.plot(x_axis, y_axis)
             self._plot.set_xlabel(f"{x_axis_name} ({self.data[x_axis_name]['unit']})")  # Set x-axis label
-            self._plot.set_ylabel(f"{y_axis_name} ({self.data[y_axis_name]['unit']})")  # Set y-axis label
+            self._plot.set_ylabel(f"{y_axis_name} ({y_axis_unit})")  # Set y-axis label
             self.canvas.draw()
         
     def update_lap_selection(self, _):
