@@ -191,3 +191,4 @@ class iRacingTelemetryLogger:
         """
         while self.recording:
             self.poll()
+            time.sleep(self.polling_rate)
