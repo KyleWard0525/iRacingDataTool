@@ -2,8 +2,9 @@
 An app for recording, visualizing, and analyzing iRacing telemetry. The tool can be used to evaluate setups as well as driver performance.
 
 **Before continuing, please note the following:**
-- This tool is still in development and will likely have bugs. Please report any bugs you find.
-- There is no development schedule for this tool, so updates may be sporadic.
+- This app is not currently in development
+- This tool is in an early state and will likely have bugs. Please report any bugs you find.
+- There is no development schedule for this tool, so updates may be sporadic or non-existent. 
 - This tool uses the iRacing SDK and thus requires the iRacing Simulator to be running in order to record data.
 - If you have any comments, suggestions, or would like to contribute to the app, please let me know. Improvements are always welcome.
 
